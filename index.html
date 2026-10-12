@@ -1,0 +1,1178 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ANIMAL HOUSE OBBY — PREPOSITION QUEST</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+        body {
+            font-family: 'Fredoka', cursive, sans-serif;
+            background-color: #0f172a;
+            overflow: hidden;
+        }
+        .d-pad-btn {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(8px);
+            border: 3px solid rgba(255, 255, 255, 0.85);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.35), inset 0 2px 4px rgba(255,255,255,0.7);
+            transition: all 0.1s ease;
+        }
+        .d-pad-btn:active, .d-pad-btn.active {
+            background: rgba(255, 225, 0, 0.9);
+            transform: scale(0.92);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+        }
+        .action-btn {
+            background: linear-gradient(135deg, #ff4757, #ff6b81);
+            border: 4px solid #ffffff;
+            box-shadow: 0 6px 0px #b33939, 0 10px 15px rgba(0,0,0,0.3);
+        }
+        .action-btn:active, .action-btn.active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0px #b33939, 0 5px 10px rgba(0,0,0,0.3);
+        }
+        .word-tile {
+            background: linear-gradient(135deg, #00d2d3, #01a3a4);
+            border: 3px solid #ffffff;
+            box-shadow: 0 5px 0 #007879;
+            transition: all 0.12s ease;
+        }
+        .word-tile:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #007879;
+        }
+        .answer-tile {
+            background: linear-gradient(135deg, #5f27cd, #341f97);
+            border: 3px solid #ffffff;
+            box-shadow: 0 4px 0 #221266;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ff9f43;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen relative overflow-hidden text-slate-800">
+
+    <!-- 3D Canvas Container -->
+    <div id="canvas-container" class="absolute inset-0 w-full h-full z-0"></div>
+
+    <!-- START / NAME ENTRY SCREEN -->
+    <div id="start-screen" class="fixed inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl border-4 border-yellow-400 text-center space-y-6 animate-fadeIn">
+            <div class="inline-block bg-yellow-400 text-indigo-950 font-black px-4 py-1.5 rounded-full text-xs uppercase tracking-widest shadow-md">
+                YEAR 2 ENGLISH PREPOSITION QUEST
+            </div>
+            <div>
+                <h1 class="text-3xl md:text-4xl font-extrabold text-indigo-900 leading-tight">ANIMAL HOUSE OBBY</h1>
+                <p class="text-sm text-indigo-600 font-semibold mt-1">Explore rooms, find animals, build English sentences!</p>
+            </div>
+
+            <div class="bg-indigo-50 p-4 rounded-2xl border-2 border-indigo-100 flex items-center justify-center space-x-3">
+                <i class="fa-solid fa-gamepad text-4xl text-indigo-500"></i>
+                <div class="text-left">
+                    <div class="text-xs font-bold text-indigo-400 uppercase">Learning Target</div>
+                    <div class="text-sm font-extrabold text-indigo-900">ON | IN | UNDER</div>
+                </div>
+            </div>
+
+            <!-- Name Input Field -->
+            <div class="space-y-2 text-left">
+                <label for="player-nickname" class="text-xs font-extrabold uppercase tracking-wider text-slate-500 block ml-1">Enter Pupil Name / Nickname:</label>
+                <input type="text" id="player-nickname" value="Pupil" placeholder="e.g., Ali / Mei Ling / Arvin" maxlength="15" 
+                       class="w-full px-4 py-3.5 rounded-2xl border-3 border-indigo-300 text-lg font-bold text-indigo-950 focus:border-yellow-400 focus:outline-none shadow-inner bg-slate-50">
+                <p id="name-error" class="text-xs text-rose-500 font-bold hidden">Please enter your name before starting!</p>
+            </div>
+
+            <div class="space-y-3 pt-2">
+                <button id="btn-start-game" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-xl py-4 rounded-2xl shadow-lg border-b-4 border-teal-700 transition active:scale-98 flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-play"></i>
+                    <span>START GAME</span>
+                </button>
+                <button id="btn-open-lb-start" class="w-full bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold py-2.5 rounded-xl border border-amber-300 text-sm flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-trophy text-amber-600"></i>
+                    <span>VIEW TOP 20 LEADERBOARD</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HUD OVERLAY (TOP BAR) -->
+    <div id="game-hud" class="absolute top-3 left-3 right-3 flex justify-between items-center pointer-events-none z-10 hidden">
+        <div class="bg-white/95 backdrop-blur-md px-3.5 py-2 rounded-2xl shadow-xl border-2 border-yellow-400 flex items-center space-x-3 pointer-events-auto">
+            <div class="flex flex-col">
+                <span id="hud-player-name" class="text-xs font-black text-indigo-900 truncate max-w-[90px] sm:max-w-[120px]">Pupil</span>
+                <div class="flex items-center text-amber-500 font-black text-base sm:text-lg">
+                    <i class="fa-solid fa-star mr-1"></i>
+                    <span id="score-display">0</span>
+                </div>
+            </div>
+            <div class="h-8 w-0.5 bg-slate-200"></div>
+            <div class="text-center">
+                <div class="text-[10px] font-bold text-slate-400 uppercase">Mission</div>
+                <div class="text-base sm:text-lg font-black text-indigo-600"><span id="mission-num">1</span>/20</div>
+            </div>
+        </div>
+
+        <div class="bg-white/95 backdrop-blur-md px-4 py-2 rounded-2xl shadow-xl border-2 border-rose-400 flex items-center space-x-2 pointer-events-auto">
+            <i class="fa-solid fa-stopwatch text-rose-500 text-lg sm:text-xl"></i>
+            <span id="timer-display" class="font-black text-lg sm:text-xl text-rose-600">60</span><span class="text-xs font-bold text-rose-400">s</span>
+        </div>
+
+        <div class="flex space-x-2 pointer-events-auto">
+            <button id="mute-btn" class="w-10 h-10 sm:w-11 sm:h-11 bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border-2 border-slate-300 flex items-center justify-center text-slate-700 hover:bg-slate-100 active:scale-95">
+                <i class="fa-solid fa-volume-high text-base sm:text-lg"></i>
+            </button>
+            <button id="hud-lb-btn" class="w-10 h-10 sm:w-11 sm:h-11 bg-yellow-400 rounded-2xl shadow-lg border-2 border-yellow-200 flex items-center justify-center text-indigo-950 hover:bg-yellow-300 active:scale-95">
+                <i class="fa-solid fa-trophy text-base sm:text-lg"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- MISSION BANNER (TOP CENTER) -->
+    <div id="mission-banner" class="absolute top-16 sm:top-20 left-1/2 -translate-x-1/2 w-11/12 max-w-md bg-indigo-900/90 text-white backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-2xl border-2 border-indigo-400 text-center pointer-events-none z-10 hidden">
+        <div id="target-room-tag" class="text-[10px] sm:text-xs font-black tracking-widest text-yellow-300 uppercase">LOCATION: KITCHEN</div>
+        <div id="mission-prompt" class="text-sm sm:text-base font-extrabold text-white mt-0.5">Find the spider!</div>
+    </div>
+
+    <!-- TOUCH CONTROLS (MOBILE D-PAD & JUMP) -->
+    <div id="touch-controls" class="absolute inset-0 pointer-events-none z-20 flex justify-between items-end p-4 sm:p-6 hidden">
+        <!-- D-PAD CONTROLLER (BOTTOM LEFT) -->
+        <div class="relative w-40 h-40 sm:w-48 sm:h-48 bg-slate-900/40 backdrop-blur-md rounded-full border-2 border-white/40 pointer-events-auto flex items-center justify-center shadow-2xl">
+            <div class="w-10 h-10 bg-white/20 rounded-full border border-white/40"></div>
+            
+            <button id="btn-up" class="d-pad-btn absolute top-1 left-1/2 -translate-x-1/2 w-12 h-14 rounded-2xl flex items-center justify-center text-white text-2xl font-black">
+                <i class="fa-solid fa-chevron-up"></i>
+            </button>
+            <button id="btn-down" class="d-pad-btn absolute bottom-1 left-1/2 -translate-x-1/2 w-12 h-14 rounded-2xl flex items-center justify-center text-white text-2xl font-black">
+                <i class="fa-solid fa-chevron-down"></i>
+            </button>
+            <button id="btn-left" class="d-pad-btn absolute left-1 top-1/2 -translate-y-1/2 w-14 h-12 rounded-2xl flex items-center justify-center text-white text-2xl font-black">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <button id="btn-right" class="d-pad-btn absolute right-1 top-1/2 -translate-y-1/2 w-14 h-12 rounded-2xl flex items-center justify-center text-white text-2xl font-black">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+
+        <!-- JUMP BUTTON (BOTTOM RIGHT) -->
+        <div class="pointer-events-auto pb-2 pr-2">
+            <button id="btn-jump" class="action-btn w-20 h-20 sm:w-24 sm:h-24 rounded-full flex flex-col items-center justify-center text-white font-black shadow-2xl active:scale-95">
+                <i class="fa-solid fa-angles-up text-2xl mb-0.5"></i>
+                <span class="text-[10px] uppercase tracking-wider">JUMP</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- PROXIMITY INTERACT BUTTON -->
+    <div id="interact-container" class="absolute bottom-28 left-1/2 -translate-x-1/2 z-30 hidden">
+        <button id="interact-btn" class="bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-black px-8 py-3.5 rounded-full shadow-2xl border-4 border-white animate-bounce text-lg flex items-center space-x-3">
+            <i class="fa-solid fa-star text-yellow-300 text-xl"></i>
+            <span id="interact-text">START CHALLENGE</span>
+        </button>
+    </div>
+
+    <!-- SENTENCE BUILDER MODAL -->
+    <div id="sentence-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-40 hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white rounded-3xl shadow-2xl border-4 border-indigo-400 w-full max-w-xl p-5 sm:p-6 relative flex flex-col space-y-4 max-h-[95vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-3 border-slate-200">
+                <div>
+                    <h2 class="text-lg sm:text-2xl font-black text-indigo-900 flex items-center">
+                        <i class="fa-solid fa-puzzle-piece mr-2 text-yellow-500"></i> Sentence Challenge
+                    </h2>
+                    <p class="text-xs text-slate-500 font-semibold">Arrange the tiles in the correct order!</p>
+                </div>
+                <div class="bg-indigo-100 text-indigo-800 font-bold text-xs px-3 py-1 rounded-full">
+                    Mission <span id="modal-mission-idx">1</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-center">
+                <div class="text-[11px] text-slate-400 font-extrabold uppercase tracking-wider">Observed Target Scene</div>
+                <div id="clue-description" class="text-base sm:text-lg font-black text-indigo-950 mt-0.5">Target Scene Details</div>
+            </div>
+
+            <div class="space-y-1">
+                <div class="text-xs font-extrabold text-slate-400 uppercase ml-1">Your Sentence Answer:</div>
+                <div id="answer-slots" class="min-h-[70px] bg-slate-100 rounded-2xl p-3 flex flex-wrap gap-2 items-center justify-center border-2 border-dashed border-indigo-300">
+                    <span class="text-slate-400 text-xs sm:text-sm font-semibold">Tap word tiles below to build your sentence...</span>
+                </div>
+            </div>
+
+            <div class="space-y-1">
+                <div class="text-xs font-extrabold text-slate-400 uppercase ml-1">Available Word Tiles:</div>
+                <div id="word-pool" class="flex flex-wrap gap-2 justify-center p-3 min-h-[90px] bg-indigo-50/60 rounded-2xl border border-indigo-100">
+                </div>
+            </div>
+
+            <div id="modal-feedback" class="hidden p-3 rounded-xl text-center text-xs sm:text-sm font-bold"></div>
+
+            <div class="flex flex-wrap gap-2 justify-between items-center pt-2 border-t border-slate-100">
+                <button id="btn-hint" class="bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-3.5 py-2.5 rounded-xl border border-amber-300 flex items-center space-x-1.5 text-xs sm:text-sm">
+                    <i class="fa-solid fa-lightbulb text-amber-500"></i>
+                    <span>HINT (-10 pts)</span>
+                </button>
+
+                <div class="flex space-x-2">
+                    <button id="btn-clear" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm">
+                        CLEAR
+                    </button>
+                    <button id="btn-submit" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black px-6 py-2.5 rounded-xl border-b-4 border-emerald-700 text-xs sm:text-sm flex items-center space-x-1.5 shadow-lg active:scale-95">
+                        <span>SUBMIT</span>
+                        <i class="fa-solid fa-check"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LEADERBOARD MODAL -->
+    <div id="leaderboard-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl border-4 border-yellow-400 w-full max-w-md p-5 sm:p-6 flex flex-col max-h-[85vh]">
+            <div class="flex justify-between items-center border-b pb-3 mb-3">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-black text-amber-600 flex items-center">
+                        <i class="fa-solid fa-trophy mr-2 text-yellow-500"></i> TOP 20 LEADERBOARD
+                    </h2>
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">LOCAL LEADERBOARD — THIS DEVICE ONLY</div>
+                </div>
+                <button id="close-leaderboard" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">&times;</button>
+            </div>
+
+            <div id="leaderboard-list" class="overflow-y-auto flex-1 pr-1 space-y-2 my-2">
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
+                <button id="btn-reset-scores" class="text-xs font-bold text-rose-500 hover:text-rose-700 flex items-center space-x-1">
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span>Reset Local Scores</span>
+                </button>
+                <button id="btn-close-lb-footer" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-4 py-2 rounded-xl text-xs">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GAME OVER / QUEST COMPLETE MODAL -->
+    <div id="gameover-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-lg z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl border-4 border-indigo-500 w-full max-w-md p-6 text-center space-y-5 animate-scaleUp">
+            <div class="text-6xl text-amber-400 animate-bounce">
+                <i class="fa-solid fa-crown"></i>
+            </div>
+            <div>
+                <h2 class="text-3xl font-black text-indigo-900">QUEST COMPLETED!</h2>
+                <p class="text-sm font-semibold text-slate-600 mt-1">You mastered all 20 English Preposition Missions!</p>
+            </div>
+            
+            <div class="bg-indigo-50 p-4 rounded-2xl border border-indigo-100 flex justify-around">
+                <div>
+                    <div class="text-xs text-indigo-400 font-bold uppercase">Pupil Name</div>
+                    <div id="end-player-name" class="text-lg font-black text-indigo-950">Pupil</div>
+                </div>
+                <div class="h-10 w-0.5 bg-indigo-200"></div>
+                <div>
+                    <div class="text-xs text-indigo-400 font-bold uppercase">Final Score</div>
+                    <div id="final-score" class="text-2xl font-black text-amber-500">2000</div>
+                </div>
+                <div class="h-10 w-0.5 bg-indigo-200"></div>
+                <div>
+                    <div class="text-xs text-indigo-400 font-bold uppercase">Time</div>
+                    <div id="final-time" class="text-2xl font-black text-emerald-600">0s</div>
+                </div>
+            </div>
+
+            <div class="space-y-2 pt-2">
+                <button id="btn-play-again" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3.5 rounded-2xl shadow-lg border-b-4 border-indigo-900 transition flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>PLAY AGAIN</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+            }
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+            playTone(freq, type, duration, vol=0.1) {
+                if (this.muted) return;
+                this.init();
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch(e){}
+            }
+            sfxSuccess() {
+                this.playTone(523.25, 'sine', 0.12, 0.15);
+                setTimeout(() => this.playTone(659.25, 'sine', 0.12, 0.15), 90);
+                setTimeout(() => this.playTone(783.99, 'sine', 0.25, 0.2), 180);
+            }
+            sfxFail() {
+                this.playTone(280, 'sawtooth', 0.15, 0.15);
+                setTimeout(() => this.playTone(210, 'sawtooth', 0.25, 0.15), 120);
+            }
+            sfxClick() {
+                this.playTone(750, 'triangle', 0.05, 0.05);
+            }
+            sfxJump() {
+                this.playTone(380, 'sine', 0.1, 0.08);
+                setTimeout(() => this.playTone(580, 'sine', 0.12, 0.08), 40);
+            }
+        }
+        const audio = new SoundEngine();
+
+        // 20 Missions matching room assignments strictly
+        const MISSIONS = [
+            { id: 1, sentence: "There is a cat on the bed.", room: "Bedroom", animal: "cat", count: 1, prep: "on", obj: "bed" },
+            { id: 2, sentence: "There are two ducks in the bathtub.", room: "Bathroom", animal: "duck", count: 2, prep: "in", obj: "bathtub" },
+            { id: 3, sentence: "There is a spider under the chair.", room: "Kitchen", animal: "spider", count: 1, prep: "under", obj: "chair" },
+            { id: 4, sentence: "There are three rats on the sofa.", room: "Living Room", animal: "rat", count: 3, prep: "on", obj: "sofa" },
+            { id: 5, sentence: "There is a dog in the box.", room: "Bedroom", animal: "dog", count: 1, prep: "in", obj: "box_bedroom" },
+            { id: 6, sentence: "There are four elephants under the table.", room: "Dining Room", animal: "elephant", count: 4, prep: "under", obj: "table" },
+            { id: 7, sentence: "There is a duck on the chair.", room: "Kitchen", animal: "duck", count: 1, prep: "on", obj: "chair" },
+            { id: 8, sentence: "There are five spiders in the basket.", room: "Bedroom", animal: "spider", count: 5, prep: "in", obj: "basket_bedroom" },
+            { id: 9, sentence: "There is a rat under the bed.", room: "Bedroom", animal: "rat", count: 1, prep: "under", obj: "bed" },
+            { id: 10, sentence: "There are two cats on the sofa.", room: "Living Room", animal: "cat", count: 2, prep: "on", obj: "sofa" },
+            { id: 11, sentence: "There is an elephant in the room.", room: "Living Room", animal: "elephant", count: 1, prep: "in", obj: "room" },
+            { id: 12, sentence: "There are three dogs under the table.", room: "Dining Room", animal: "dog", count: 3, prep: "under", obj: "table" },
+            { id: 13, sentence: "There is a lizard on the box.", room: "Kitchen", animal: "lizard", count: 1, prep: "on", obj: "box_kitchen" },
+            { id: 14, sentence: "There are four frogs in the bathtub.", room: "Bathroom", animal: "frog", count: 4, prep: "in", obj: "bathtub" },
+            { id: 15, sentence: "There is a frog under the chair.", room: "Kitchen", animal: "frog", count: 1, prep: "under", obj: "chair" },
+            { id: 16, sentence: "There are five lizards on the table.", room: "Dining Room", animal: "lizard", count: 5, prep: "on", obj: "table" },
+            { id: 17, sentence: "There is a spider in the basket.", room: "Bathroom", animal: "spider", count: 1, prep: "in", obj: "basket_bathroom" },
+            { id: 18, sentence: "There are two rats under the bed.", room: "Bedroom", animal: "rat", count: 2, prep: "under", obj: "bed" },
+            { id: 19, sentence: "There is a duck in the bathtub.", room: "Bathroom", animal: "duck", count: 1, prep: "in", obj: "bathtub" },
+            { id: 20, sentence: "There are three elephants on the platform.", room: "Living Room", animal: "elephant", count: 3, prep: "on", obj: "platform" }
+        ];
+
+        let playerNickname = "Pupil";
+        let currentMissionIndex = 0;
+        let score = 0;
+        let timer = 60;
+        let timerInterval = null;
+        let totalTimeElapsed = 0;
+        let totalTimerInterval = null;
+        let userConstructedTiles = [];
+        let activeInteractTarget = null;
+
+        let scene, camera, renderer;
+        let player;
+        let keys = { forward: false, backward: false, left: false, right: false, jump: false };
+        let playerVelocity = new THREE.Vector3();
+        let isGrounded = true;
+        const clock = new THREE.Clock();
+
+        let houseFurniture = {};
+        let activeMissionAnimals = [];
+        let activeMarkers = [];
+
+        function init3DWorld() {
+            const container = document.getElementById('canvas-container');
+            
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x7ed6df);
+            scene.fog = new THREE.FogExp2(0x7ed6df, 0.008);
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            container.appendChild(renderer.domElement);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+            dirLight.position.set(40, 60, 30);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 2048;
+            dirLight.shadow.mapSize.height = 2048;
+            dirLight.shadow.camera.near = 0.5;
+            dirLight.shadow.camera.far = 180;
+            const d = 50;
+            dirLight.shadow.camera.left = -d;
+            dirLight.shadow.camera.right = d;
+            dirLight.shadow.camera.top = d;
+            dirLight.shadow.camera.bottom = -d;
+            scene.add(dirLight);
+
+            buildRobloxHouse();
+            createPlayerAvatar();
+
+            window.addEventListener('resize', onWindowResize, false);
+        }
+
+        function buildRobloxHouse() {
+            // Room Floor creation with explicit layout coordinates
+            // Living Room (-15, 15)
+            // Bedroom (-15, -15)
+            // Bathroom (15, -15)
+            // Dining Room (15, 15)
+            // Kitchen (0, 0)
+            const createRoomFloor = (x, z, color, width=28, depth=28) => {
+                const floorGeo = new THREE.BoxGeometry(width, 0.8, depth);
+                const floorMat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.6 });
+                const floor = new THREE.Mesh(floorGeo, floorMat);
+                floor.position.set(x, -0.4, z);
+                floor.receiveShadow = true;
+                scene.add(floor);
+            };
+
+            createRoomFloor(-15, 15, 0xbadc58);  // Living Room
+            createRoomFloor(-15, -15, 0xffbe76); // Bedroom
+            createRoomFloor(15, -15, 0x7ed6df);  // Bathroom
+            createRoomFloor(15, 15, 0xff7979);   // Dining Room
+            createRoomFloor(0, 0, 0xf6e58d, 28, 28); // Kitchen/Center
+
+            const wallMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 });
+
+            const createWall = (w, h, d, x, y, z) => {
+                const wall = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMat);
+                wall.position.set(x, y, z);
+                wall.castShadow = true;
+                wall.receiveShadow = true;
+                scene.add(wall);
+            };
+
+            // Outer Walls
+            createWall(60, 9, 1, 0, 4.5, -30);
+            createWall(60, 9, 1, 0, 4.5, 30);
+            createWall(1, 9, 60, -30, 4.5, 0);
+            createWall(1, 9, 60, 30, 4.5, 0);
+
+            // Inner Wall partitions with doorways
+            createWall(1, 9, 20, 0, 4.5, -20); 
+            createWall(1, 9, 20, 0, 4.5, 20);  
+            createWall(20, 9, 1, -20, 4.5, 0); 
+            createWall(20, 9, 1, 20, 4.5, 0);  
+
+            const createRoomBanner = (text, x, y, z, colorHex) => {
+                const group = new THREE.Group();
+
+                const plateGeo = new THREE.BoxGeometry(10, 2.5, 0.6);
+                const plateMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.3 });
+                const plate = new THREE.Mesh(plateGeo, plateMat);
+                plate.castShadow = true;
+                group.add(plate);
+
+                const borderGeo = new THREE.BoxGeometry(10.4, 2.9, 0.4);
+                const borderMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const border = new THREE.Mesh(borderGeo, borderMat);
+                border.position.z = -0.15;
+                group.add(border);
+
+                for (let px of [-4, 4]) {
+                    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 4), new THREE.MeshStandardMaterial({ color: 0x333333 }));
+                    pole.position.set(px, 2.5, 0);
+                    group.add(pole);
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = 512;
+                canvas.height = 128;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, 512, 128);
+                ctx.fillStyle = '#1e293b';
+                ctx.font = '900 52px Fredoka, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, 256, 64);
+
+                const texture = new THREE.CanvasTexture(canvas);
+                const textGeo = new THREE.PlaneGeometry(9.6, 2.2);
+                const textMat = new THREE.MeshBasicMaterial({ map: texture });
+                const textMeshF = new THREE.Mesh(textGeo, textMat);
+                textMeshF.position.z = 0.32;
+                group.add(textMeshF);
+
+                const textMeshB = textMeshF.clone();
+                textMeshB.rotation.y = Math.PI;
+                textMeshB.position.z = -0.32;
+                group.add(textMeshB);
+
+                group.position.set(x, y, z);
+                scene.add(group);
+            };
+
+            createRoomBanner("BEDROOM", -15, 7.5, -15, 0xff9f43);
+            createRoomBanner("BATHROOM", 15, 7.5, -15, 0x00d2d3);
+            createRoomBanner("LIVING ROOM", -15, 7.5, 15, 0x10ac84);
+            createRoomBanner("DINING ROOM", 15, 7.5, 15, 0xee5253);
+            createRoomBanner("KITCHEN", 0, 7.5, -2, 0xfeca57);
+
+            // --- 1. BEDROOM (-15, -15) ---
+            // Bed (Missions 1, 9, 18)
+            const bedGroup = new THREE.Group();
+            const bedFrame = new THREE.Mesh(new THREE.BoxGeometry(7, 1.4, 9), new THREE.MeshStandardMaterial({ color: 0x834c32 }));
+            bedFrame.position.y = 0.7;
+            const mattress = new THREE.Mesh(new THREE.BoxGeometry(6.4, 0.6, 8.4), new THREE.MeshStandardMaterial({ color: 0xffffff }));
+            mattress.position.y = 1.5;
+            const pillow = new THREE.Mesh(new THREE.BoxGeometry(4.8, 0.5, 2.2), new THREE.MeshStandardMaterial({ color: 0x54a0ff }));
+            pillow.position.set(0, 1.85, -2.8);
+            bedGroup.add(bedFrame, mattress, pillow);
+            bedGroup.position.set(-18, 0, -18);
+            scene.add(bedGroup);
+            houseFurniture['bed'] = bedGroup;
+
+            // Bedroom Box (Mission 5)
+            const bedroomBox = new THREE.Mesh(new THREE.BoxGeometry(3.6, 3.0, 3.6), new THREE.MeshStandardMaterial({ color: 0xe1b12c, roughness: 0.5 }));
+            bedroomBox.position.set(-8, 1.5, -18);
+            scene.add(bedroomBox);
+            houseFurniture['box_bedroom'] = bedroomBox;
+
+            // Bedroom Basket (Mission 8)
+            const basketBedGroup = new THREE.Group();
+            const basketBedBody = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 1.8, 2.2, 12), new THREE.MeshStandardMaterial({ color: 0xd35400 }));
+            basketBedBody.position.y = 1.1;
+            basketBedGroup.add(basketBedBody);
+            basketBedGroup.position.set(-18, 0, -8);
+            scene.add(basketBedGroup);
+            houseFurniture['basket_bedroom'] = basketBedGroup;
+
+            // --- 2. BATHROOM (15, -15) ---
+            // Bathtub (Missions 2, 14, 19)
+            const tubGroup = new THREE.Group();
+            const tubBody = new THREE.Mesh(new THREE.BoxGeometry(6, 2.4, 9), new THREE.MeshStandardMaterial({ color: 0xf5f6fa }));
+            tubBody.position.y = 1.2;
+            const tubWater = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.1, 8.2), new THREE.MeshStandardMaterial({ color: 0x48dbfb, roughness: 0.1 }));
+            tubWater.position.y = 2.1;
+            tubGroup.add(tubBody, tubWater);
+            tubGroup.position.set(18, 0, -18);
+            scene.add(tubGroup);
+            houseFurniture['bathtub'] = tubGroup;
+
+            // Bathroom Basket (Mission 17)
+            const basketBathGroup = new THREE.Group();
+            const basketBathBody = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 1.8, 2.2, 12), new THREE.MeshStandardMaterial({ color: 0xe67e22 }));
+            basketBathBody.position.y = 1.1;
+            basketBathGroup.add(basketBathBody);
+            basketBathGroup.position.set(18, 0, -6);
+            scene.add(basketBathGroup);
+            houseFurniture['basket_bathroom'] = basketBathGroup;
+
+            // --- 3. LIVING ROOM (-15, 15) ---
+            // Sofa (Missions 4, 10)
+            const sofaGroup = new THREE.Group();
+            const sofaBase = new THREE.Mesh(new THREE.BoxGeometry(9, 1.4, 4.5), new THREE.MeshStandardMaterial({ color: 0xff6b6b }));
+            sofaBase.position.y = 0.7;
+            const sofaBack = new THREE.Mesh(new THREE.BoxGeometry(9, 2.6, 1.2), new THREE.MeshStandardMaterial({ color: 0xee5253 }));
+            sofaBack.position.set(0, 1.3, -1.65);
+            sofaGroup.add(sofaBase, sofaBack);
+            sofaGroup.position.set(-15, 0, 18);
+            scene.add(sofaGroup);
+            houseFurniture['sofa'] = sofaGroup;
+
+            // Room Rug (Mission 11)
+            const roomZone = new THREE.Group();
+            const rugMat = new THREE.MeshStandardMaterial({ color: 0x9b59b6 });
+            const rug = new THREE.Mesh(new THREE.BoxGeometry(10, 0.1, 10), rugMat);
+            rug.position.y = 0.05;
+            roomZone.add(rug);
+            roomZone.position.set(-6, 0, 18);
+            scene.add(roomZone);
+            houseFurniture['room'] = roomZone;
+
+            // Platform (Mission 20)
+            const platMesh = new THREE.Mesh(new THREE.BoxGeometry(11, 1.4, 8), new THREE.MeshStandardMaterial({ color: 0x1dd1a1 }));
+            platMesh.position.set(-20, 0.7, 8);
+            scene.add(platMesh);
+            houseFurniture['platform'] = platMesh;
+
+            // --- 4. DINING ROOM (15, 15) ---
+            // Table (Missions 6, 12, 16)
+            const tableGroup = new THREE.Group();
+            const tableTop = new THREE.Mesh(new THREE.BoxGeometry(9.5, 0.5, 7), new THREE.MeshStandardMaterial({ color: 0x546de5 }));
+            tableTop.position.y = 2.8;
+            tableGroup.add(tableTop);
+            for(let dx of [-4, 4]) {
+                for(let dz of [-3, 3]) {
+                    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.5, 2.6, 0.5), new THREE.MeshStandardMaterial({ color: 0x303952 }));
+                    leg.position.set(dx, 1.3, dz);
+                    tableGroup.add(leg);
+                }
+            }
+            tableGroup.position.set(18, 0, 18);
+            scene.add(tableGroup);
+            houseFurniture['table'] = tableGroup;
+
+            // --- 5. KITCHEN (0, 0) ---
+            // Chair (Missions 3, 7, 15)
+            const chairGroup = new THREE.Group();
+            const seat = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.4, 3.2), new THREE.MeshStandardMaterial({ color: 0xf9ca24 }));
+            seat.position.y = 1.6;
+            const back = new THREE.Mesh(new THREE.BoxGeometry(3.2, 2.2, 0.4), new THREE.MeshStandardMaterial({ color: 0xf0932b }));
+            back.position.set(0, 2.7, -1.4);
+            chairGroup.add(seat, back);
+            for(let dx of [-1.3, 1.3]) {
+                for(let dz of [-1.3, 1.3]) {
+                    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1.4, 0.35), new THREE.MeshStandardMaterial({ color: 0xf0932b }));
+                    leg.position.set(dx, 0.7, dz);
+                    chairGroup.add(leg);
+                }
+            }
+            chairGroup.position.set(-4, 0, -4);
+            scene.add(chairGroup);
+            houseFurniture['chair'] = chairGroup;
+
+            // Kitchen Box (Mission 13)
+            const kitchenBox = new THREE.Mesh(new THREE.BoxGeometry(3.6, 3.0, 3.6), new THREE.MeshStandardMaterial({ color: 0xf39c12, roughness: 0.5 }));
+            kitchenBox.position.set(4, 1.5, -4);
+            scene.add(kitchenBox);
+            houseFurniture['box_kitchen'] = kitchenBox;
+        }
+
+        function createBlockyAnimal(type) {
+            const group = new THREE.Group();
+
+            if (type === 'cat') {
+                const mat = new THREE.MeshStandardMaterial({ color: 0xff9f43 });
+                const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.9, 1.8), mat);
+                body.position.y = 0.45;
+                const head = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.8, 0.8), mat);
+                head.position.set(0, 1.1, 0.8);
+                for(let ex of [-0.3, 0.3]) {
+                    const ear = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.4, 4), new THREE.MeshStandardMaterial({ color: 0xee5253 }));
+                    ear.position.set(ex, 1.7, 0.8);
+                    group.add(ear);
+                }
+                group.add(body, head);
+            } else if (type === 'duck') {
+                const mat = new THREE.MeshStandardMaterial({ color: 0xffea00 });
+                const body = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.8, 1.4), mat);
+                body.position.y = 0.4;
+                const head = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.7, 0.7), mat);
+                head.position.set(0, 1.0, 0.5);
+                const beak = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.2, 0.4), new THREE.MeshStandardMaterial({ color: 0xff6b6b }));
+                beak.position.set(0, 0.9, 0.9);
+                group.add(body, head, beak);
+            } else if (type === 'spider') {
+                const mat = new THREE.MeshStandardMaterial({ color: 0x2d3436 });
+                const body = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.8, 1.4), mat);
+                body.position.y = 0.4;
+                const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+                for(let ex of [-0.3, 0.3]) {
+                    const eye = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 0.1), eyeMat);
+                    eye.position.set(ex, 0.6, 0.7);
+                    group.add(eye);
+                }
+                group.add(body);
+            } else if (type === 'rat') {
+                const mat = new THREE.MeshStandardMaterial({ color: 0x636e72 });
+                const body = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.6, 1.5), mat);
+                body.position.y = 0.3;
+                const snout = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.3, 0.5), new THREE.MeshStandardMaterial({ color: 0xffa8a8 }));
+                snout.position.set(0, 0.3, 0.9);
+                group.add(body, snout);
+            } else if (type === 'dog') {
+                const mat = new THREE.MeshStandardMaterial({ color: 0xc8d6e5 });
+                const body = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.0, 2.0), mat);
+                body.position.y = 0.5;
+                const head = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.8, 0.9), mat);
+                head.position.set(0, 1.2, 0.9);
+                const snout = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.4, 0.5), new THREE.MeshStandardMaterial({ color: 0x8395a7 }));
+                snout.position.set(0, 1.0, 1.4);
+                group.add(body, head, snout);
+            } else if (type === 'elephant') {
+                const mat = new THREE.MeshStandardMaterial({ color: 0x48dbfb });
+                const body = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.8, 3.0), mat);
+                body.position.y = 0.9;
+                const head = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.4, 1.4), mat);
+                head.position.set(0, 1.8, 1.5);
+                const trunk = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.2, 0.5), mat);
+                trunk.position.set(0, 1.2, 2.3);
+                trunk.rotation.x = 0.4;
+                group.add(body, head, trunk);
+            } else if (type === 'lizard') {
+                const mat = new THREE.MeshStandardMaterial({ color: 0x1dd1a1 });
+                const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.4, 2.2), mat);
+                body.position.y = 0.2;
+                const head = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.35, 0.6), mat);
+                head.position.set(0, 0.25, 1.2);
+                group.add(body, head);
+            } else if (type === 'frog') {
+                const mat = new THREE.MeshStandardMaterial({ color: 0x10ac84 });
+                const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.8, 1.2), mat);
+                body.position.y = 0.4;
+                const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                for(let ex of [-0.4, 0.4]) {
+                    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.25, 8, 8), eyeMat);
+                    eye.position.set(ex, 0.9, 0.3);
+                    group.add(eye);
+                }
+                group.add(body);
+            }
+
+            group.castShadow = true;
+            return group;
+        }
+
+        function createPlayerAvatar() {
+            player = new THREE.Group();
+
+            const headMat = new THREE.MeshStandardMaterial({ color: 0xffcc80 });
+            const head = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.9), headMat);
+            head.position.y = 2.05;
+            head.castShadow = true;
+
+            const torsoMat = new THREE.MeshStandardMaterial({ color: 0x2980b9 });
+            const torso = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.4, 0.7), torsoMat);
+            torso.position.y = 1.0;
+            torso.castShadow = true;
+
+            const legMat = new THREE.MeshStandardMaterial({ color: 0x2c3e50 });
+            const legL = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.0, 0.6), legMat);
+            legL.position.set(-0.3, 0.5, 0);
+            legL.castShadow = true;
+
+            const legR = legL.clone();
+            legR.position.x = 0.3;
+
+            player.add(head, torso, legL, legR);
+            player.position.set(0, 0, 0);
+            scene.add(player);
+        }
+
+        function setupEventListeners() {
+            document.getElementById('btn-start-game').addEventListener('click', () => {
+                const nameInput = document.getElementById('player-nickname').value.trim();
+                if (!nameInput) {
+                    document.getElementById('name-error').classList.remove('hidden');
+                    return;
+                }
+                playerNickname = nameInput;
+                document.getElementById('hud-player-name').textContent = playerNickname;
+                document.getElementById('start-screen').classList.add('hidden');
+                document.getElementById('game-hud').classList.remove('hidden');
+                document.getElementById('mission-banner').classList.remove('hidden');
+                document.getElementById('touch-controls').classList.remove('hidden');
+                
+                audio.init();
+                startTotalTimer();
+                loadMission(0);
+            });
+
+            window.addEventListener('keydown', (e) => {
+                if (e.code === 'KeyW' || e.code === 'ArrowUp') keys.forward = true;
+                if (e.code === 'KeyS' || e.code === 'ArrowDown') keys.backward = true;
+                if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.left = true;
+                if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.right = true;
+                if (e.code === 'Space') jumpPlayer();
+            });
+
+            window.addEventListener('keyup', (e) => {
+                if (e.code === 'KeyW' || e.code === 'ArrowUp') keys.forward = false;
+                if (e.code === 'KeyS' || e.code === 'ArrowDown') keys.backward = false;
+                if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.left = false;
+                if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.right = false;
+            });
+
+            const bindTouch = (id, key) => {
+                const btn = document.getElementById(id);
+                const onDown = (e) => { e.preventDefault(); keys[key] = true; btn.classList.add('active'); };
+                const onUp = (e) => { e.preventDefault(); keys[key] = false; btn.classList.remove('active'); };
+                btn.addEventListener('touchstart', onDown, { passive: false });
+                btn.addEventListener('touchend', onUp, { passive: false });
+                btn.addEventListener('mousedown', onDown);
+                btn.addEventListener('mouseup', onUp);
+            };
+
+            bindTouch('btn-up', 'forward');
+            bindTouch('btn-down', 'backward');
+            bindTouch('btn-left', 'left');
+            bindTouch('btn-right', 'right');
+
+            document.getElementById('btn-jump').addEventListener('touchstart', (e) => { e.preventDefault(); jumpPlayer(); }, { passive: false });
+            document.getElementById('btn-jump').addEventListener('mousedown', jumpPlayer);
+
+            document.getElementById('mute-btn').addEventListener('click', () => {
+                audio.muted = !audio.muted;
+                document.getElementById('mute-btn').innerHTML = audio.muted ? 
+                    '<i class="fa-solid fa-volume-xmark text-rose-500"></i>' : 
+                    '<i class="fa-solid fa-volume-high"></i>';
+            });
+
+            document.getElementById('btn-open-lb-start').addEventListener('click', openLeaderboard);
+            document.getElementById('hud-lb-btn').addEventListener('click', openLeaderboard);
+            document.getElementById('close-leaderboard').addEventListener('click', () => document.getElementById('leaderboard-modal').classList.add('hidden'));
+            document.getElementById('btn-close-lb-footer').addEventListener('click', () => document.getElementById('leaderboard-modal').classList.add('hidden'));
+            document.getElementById('btn-reset-scores').addEventListener('click', resetLeaderboard);
+
+            document.getElementById('interact-btn').addEventListener('click', openSentenceBuilderModal);
+            document.getElementById('btn-clear').addEventListener('click', clearAnswerTiles);
+            document.getElementById('btn-submit').addEventListener('click', submitSentenceAnswer);
+            document.getElementById('btn-hint').addEventListener('click', showSentenceHint);
+            document.getElementById('btn-play-again').addEventListener('click', () => location.reload());
+        }
+
+        function jumpPlayer() {
+            if (isGrounded) {
+                playerVelocity.y = 10.0;
+                isGrounded = false;
+                audio.sfxJump();
+            }
+        }
+
+        function startTotalTimer() {
+            totalTimerInterval = setInterval(() => {
+                totalTimeElapsed++;
+            }, 1000);
+        }
+
+        function loadMission(index) {
+            if (index >= MISSIONS.length) {
+                triggerGameOver();
+                return;
+            }
+
+            currentMissionIndex = index;
+            const mission = MISSIONS[index];
+
+            document.getElementById('mission-num').textContent = index + 1;
+            document.getElementById('target-room-tag').textContent = `LOCATION: ${mission.room.toUpperCase()}`;
+            document.getElementById('mission-prompt').textContent = `Mission ${index + 1}: Find the ${mission.animal}!`;
+
+            resetMissionTimer();
+
+            activeMissionAnimals.forEach(obj => scene.remove(obj));
+            activeMissionAnimals = [];
+            activeMarkers = [];
+
+            const anchorObj = houseFurniture[mission.obj] || houseFurniture['table'];
+            const anchorPos = new THREE.Vector3();
+            anchorObj.getWorldPosition(anchorPos);
+
+            for (let i = 0; i < mission.count; i++) {
+                const animal = createBlockyAnimal(mission.animal);
+                
+                let posX = anchorPos.x + (i * 1.6 - (mission.count - 1) * 0.8);
+                let posY = anchorPos.y;
+                let posZ = anchorPos.z;
+
+                if (mission.prep === 'on') {
+                    posY += 2.2;
+                } else if (mission.prep === 'under') {
+                    posY = 0.2;
+                } else if (mission.prep === 'in') {
+                    posY += 1.0;
+                }
+
+                animal.position.set(posX, posY, posZ);
+                scene.add(animal);
+                activeMissionAnimals.push(animal);
+
+                const markerGeo = new THREE.ConeGeometry(0.6, 1.2, 4);
+                const markerMat = new THREE.MeshBasicMaterial({ color: 0xffea00 });
+                const marker = new THREE.Mesh(markerGeo, markerMat);
+                marker.rotation.x = Math.PI;
+                marker.position.set(posX, posY + 2.8, posZ);
+                scene.add(marker);
+                activeMissionAnimals.push(marker);
+                activeMarkers.push(marker);
+            }
+
+            const ringGeo = new THREE.RingGeometry(2.0, 2.8, 16);
+            const ringMat = new THREE.MeshBasicMaterial({ color: 0xf1c40f, side: THREE.DoubleSide });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.rotation.x = Math.PI / 2;
+            ring.position.set(anchorPos.x, 0.1, anchorPos.z);
+            scene.add(ring);
+            activeMissionAnimals.push(ring);
+
+            activeInteractTarget = {
+                position: anchorPos,
+                mission: mission
+            };
+        }
+
+        function openSentenceBuilderModal() {
+            const mission = MISSIONS[currentMissionIndex];
+            document.getElementById('modal-mission-idx').textContent = currentMissionIndex + 1;
+            document.getElementById('clue-description').textContent = `${mission.count} ${mission.animal}(s) ${mission.prep.toUpperCase()} the ${mission.obj.replace('_bedroom','').replace('_kitchen','').replace('_bathroom','')} in ${mission.room}`;
+            document.getElementById('modal-feedback').classList.add('hidden');
+
+            userConstructedTiles = [];
+            renderAnswerSlots();
+
+            const words = mission.sentence.split(' ');
+            let pool = [...words];
+            pool.sort(() => Math.random() - 0.5);
+
+            const poolContainer = document.getElementById('word-pool');
+            poolContainer.innerHTML = '';
+
+            pool.forEach((word) => {
+                const btn = document.createElement('button');
+                btn.className = 'word-tile px-4 py-2.5 rounded-2xl text-white font-black text-sm sm:text-base cursor-pointer select-none';
+                btn.textContent = word;
+                btn.addEventListener('click', () => {
+                    audio.sfxClick();
+                    userConstructedTiles.push(word);
+                    renderAnswerSlots();
+                });
+                poolContainer.appendChild(btn);
+            });
+
+            document.getElementById('sentence-modal').classList.remove('hidden');
+        }
+
+        function renderAnswerSlots() {
+            const container = document.getElementById('answer-slots');
+            container.innerHTML = '';
+
+            if (userConstructedTiles.length === 0) {
+                container.innerHTML = '<span class="text-slate-400 text-xs sm:text-sm font-semibold">Tap word tiles below to build your sentence...</span>';
+                return;
+            }
+
+            userConstructedTiles.forEach((word, idx) => {
+                const tile = document.createElement('button');
+                tile.className = 'answer-tile text-white font-black px-3.5 py-1.5 rounded-xl text-sm sm:text-base flex items-center space-x-1.5 cursor-pointer shadow';
+                tile.innerHTML = `<span>${word}</span> <i class="fa-solid fa-circle-xmark text-xs opacity-80"></i>`;
+                tile.addEventListener('click', () => {
+                    audio.sfxClick();
+                    userConstructedTiles.splice(idx, 1);
+                    renderAnswerSlots();
+                });
+                container.appendChild(tile);
+            });
+        }
+
+        function clearAnswerTiles() {
+            audio.sfxClick();
+            userConstructedTiles = [];
+            renderAnswerSlots();
+        }
+
+        function showSentenceHint() {
+            const mission = MISSIONS[currentMissionIndex];
+            score = Math.max(0, score - 10);
+            document.getElementById('score-display').textContent = score;
+            audio.sfxClick();
+
+            const feedback = document.getElementById('modal-feedback');
+            feedback.className = 'p-3 rounded-xl text-center text-xs sm:text-sm font-bold bg-amber-100 text-amber-900 border border-amber-300';
+            feedback.textContent = `HINT: Preposition is "${mission.prep.toUpperCase()}" and count is ${mission.count}.`;
+            feedback.classList.remove('hidden');
+        }
+
+        function submitSentenceAnswer() {
+            const mission = MISSIONS[currentMissionIndex];
+            const constructedSentence = userConstructedTiles.join(' ').trim();
+            const feedback = document.getElementById('modal-feedback');
+
+            if (constructedSentence === mission.sentence) {
+                audio.sfxSuccess();
+                score += 100;
+                document.getElementById('score-display').textContent = score;
+                document.getElementById('sentence-modal').classList.add('hidden');
+                
+                loadMission(currentMissionIndex + 1);
+            } else {
+                audio.sfxFail();
+                feedback.className = 'p-3 rounded-xl text-center text-xs sm:text-sm font-bold bg-rose-100 text-rose-900 border border-rose-300';
+                feedback.textContent = `Try again! Starts with "${mission.sentence.split(' ')[0]} ${mission.sentence.split(' ')[1]}"`;
+                feedback.classList.remove('hidden');
+            }
+        }
+
+        function resetMissionTimer() {
+            clearInterval(timerInterval);
+            timer = 60;
+            document.getElementById('timer-display').textContent = timer;
+
+            timerInterval = setInterval(() => {
+                timer--;
+                document.getElementById('timer-display').textContent = timer;
+                if (timer <= 0) {
+                    clearInterval(timerInterval);
+                    audio.sfxFail();
+                    resetMissionTimer();
+                }
+            }, 1000);
+        }
+
+        function triggerGameOver() {
+            clearInterval(timerInterval);
+            clearInterval(totalTimerInterval);
+
+            document.getElementById('end-player-name').textContent = playerNickname;
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('final-time').textContent = `${totalTimeElapsed}s`;
+
+            saveScoreToLeaderboard();
+            document.getElementById('gameover-modal').classList.remove('hidden');
+        }
+
+        function saveScoreToLeaderboard() {
+            let leaderboard = JSON.parse(localStorage.getItem('ob_preposition_lb') || '[]');
+            
+            leaderboard.push({
+                name: playerNickname,
+                score: score,
+                time: totalTimeElapsed,
+                date: new Date().toLocaleDateString()
+            });
+
+            leaderboard.sort((a, b) => {
+                if (b.score !== a.score) return b.score - a.score;
+                return a.time - b.time;
+            });
+
+            leaderboard = leaderboard.slice(0, 20);
+            localStorage.setItem('ob_preposition_lb', JSON.stringify(leaderboard));
+        }
+
+        function openLeaderboard() {
+            const container = document.getElementById('leaderboard-list');
+            let leaderboard = JSON.parse(localStorage.getItem('ob_preposition_lb') || '[]');
+            container.innerHTML = '';
+
+            if (leaderboard.length === 0) {
+                container.innerHTML = '<div class="text-center text-slate-400 py-8 font-semibold">No local scores recorded yet on this device!</div>';
+            } else {
+                leaderboard.forEach((item, idx) => {
+                    const row = document.createElement('div');
+                    row.className = `flex justify-between items-center p-3 rounded-2xl border ${item.name === playerNickname ? 'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200'}`;
+                    
+                    let trophy = `<span class="w-7 h-7 flex items-center justify-center rounded-full bg-slate-200 text-slate-700 font-bold text-xs">${idx + 1}</span>`;
+                    if (idx === 0) trophy = '<span class="text-xl">🥇</span>';
+                    if (idx === 1) trophy = '<span class="text-xl">🥈</span>';
+                    if (idx === 2) trophy = '<span class="text-xl">🥉</span>';
+
+                    row.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            ${trophy}
+                            <div>
+                                <div class="font-black text-indigo-950 text-sm">${item.name}</div>
+                                <div class="text-[10px] text-slate-400 font-bold">${item.date} | ${item.time}s</div>
+                            </div>
+                        </div>
+                        <span class="font-black text-amber-500 text-base">${item.score} pts</span>
+                    `;
+                    container.appendChild(row);
+                });
+            }
+
+            document.getElementById('leaderboard-modal').classList.remove('hidden');
+        }
+
+        function resetLeaderboard() {
+            if (confirm("Reset local leaderboard scores for this device?")) {
+                localStorage.removeItem('ob_preposition_lb');
+                openLeaderboard();
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const delta = clock.getDelta();
+            const time = clock.getElapsedTime();
+
+            const moveSpeed = 13;
+            let moveX = 0;
+            let moveZ = 0;
+
+            if (keys.forward) moveZ -= 1;
+            if (keys.backward) moveZ += 1;
+            if (keys.left) moveX -= 1;
+            if (keys.right) moveX += 1;
+
+            if (moveX !== 0 && moveZ !== 0) {
+                moveX *= 0.7071;
+                moveZ *= 0.7071;
+            }
+
+            player.position.x += moveX * moveSpeed * delta;
+            player.position.z += moveZ * moveSpeed * delta;
+
+            playerVelocity.y -= 28 * delta;
+            player.position.y += playerVelocity.y * delta;
+
+            if (player.position.y <= 0) {
+                player.position.y = 0;
+                playerVelocity.y = 0;
+                isGrounded = true;
+            }
+
+            player.position.x = Math.max(-28, Math.min(28, player.position.x));
+            player.position.z = Math.max(-28, Math.min(28, player.position.z));
+
+            if (moveX !== 0 || moveZ !== 0) {
+                player.rotation.y = Math.atan2(moveX, moveZ);
+            }
+
+            camera.position.x = player.position.x;
+            camera.position.y = player.position.y + 12;
+            camera.position.z = player.position.z + 16;
+            camera.lookAt(player.position.x, player.position.y + 1, player.position.z);
+
+            activeMarkers.forEach(m => {
+                m.rotation.y += delta * 2;
+                m.position.y += Math.sin(time * 5) * 0.01;
+            });
+
+            if (activeInteractTarget) {
+                const dist = player.position.distanceTo(activeInteractTarget.position);
+                const interactUI = document.getElementById('interact-container');
+                if (dist < 5.5) {
+                    interactUI.classList.remove('hidden');
+                } else {
+                    interactUI.classList.add('hidden');
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        window.onload = function() {
+            init3DWorld();
+            setupEventListeners();
+            animate();
+        };
+    </script>
+</body>
+</html>
+```
